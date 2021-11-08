@@ -5,8 +5,6 @@ import requests
 import plotly.express as px 
 from apiclient.discovery import build
 from apiclient.errors import HttpError
-import neologdn
-from janome.tokenizer import Tokenizer
 
 class Youtube(object):
     def __init__(self, config, channelId):
@@ -29,18 +27,7 @@ class Youtube(object):
         df["viewCount"] = df.viewCount.astype(int)
         df["likeCount"] = df.likeCount.astype(int)
         df["dislikeCount"] = df.dislikeCount.astype(int)
-        df["cln_title"] = df.title.apply(self.cln_txt)
         return df 
-
-    def cln_txt(self, title):
-        jt = Tokenizer()
-        title = neologdn.normalize(title)
-        new = []
-        for t in jt.tokenize(title, wakati=True):
-            if t in ["[", "]", "#", "!", "/", ";", ":", "%"]:
-                continue  
-            new.append(t)
-        return " ".join(new)
 
     def get_video_ids(self):
         description = []
@@ -62,7 +49,7 @@ class Youtube(object):
                 if search_result["id"]["kind"] == "youtube#video":
                     description.append((search_result["id"]["videoId"], search_result["snippet"]["channelId"],
                                         search_result["snippet"]["channelTitle"], search_result["snippet"]["title"], 
-                                        search_result["snippet"]["publishTime"]))
+                                        search_result["snippet"]["publishTime"], search_result["snippet"]["thumbnails"]["medium"]["url"]))
             
             try:
                 nextPagetoken = search_response["nextPageToken"]
@@ -72,12 +59,18 @@ class Youtube(object):
         return description 
 
     def get_statistic(self, description):
-        videoIds = [c for c, _, _, _, _ in description]
+        videoIds = [c for c, _, _, _, _, _ in description]
         statistics = []
         for id in videoIds:
             stats = self.youtube.videos().list(part="statistics", id=id).execute()["items"][0]["statistics"]
             if "commentCount" not in stats:
                 stats["commentCount"] = 0 
+            if "likeCount" not in stats:
+                stats["likeCount"] = 0
+            if "dislikeCount" not in stats:
+                stats["dislikeCount"] = 0
+            if "viewCount" not in stats:
+                stats["viewCount"] = 0
             statistics.append((stats["commentCount"], stats["viewCount"], stats["likeCount"], stats["dislikeCount"]))
             del stats 
         return statistics 
@@ -85,17 +78,18 @@ class Youtube(object):
     def create_dateframe(self, data1, data2):
         assert len(data1) == len(data2)
 
-        columns = ["timezone", "videoId", "channelId", "channelTitle", "title", 
+        columns = ["timezone", "videoId", "channelId", "channelTitle", "title", "thumbnailURL", 
                    "commentCount", "viewCount", "likeCount", "dislikeCount"]
 
-        df = pd.DataFrame({columns[0]: [c for _, _, _, _, c in data1], 
-                           columns[1]: [c for c, _, _, _, _ in data1], 
-                           columns[2]: [c for _, c, _, _, _ in data1], 
-                           columns[3]: [c for _, _, c, _, _ in data1], 
-                           columns[4]: [c for _, _, _, c, _ in data1], 
-                           columns[5]: [c for c, _, _, _ in data2], 
-                           columns[6]: [c for _, c, _, _ in data2], 
-                           columns[7]: [c for c, _, c, _ in data2], 
-                           columns[8]: [c for _, _, _, c in data2], 
+        df = pd.DataFrame({columns[0]: [c for _, _, _, _, c, _ in data1], 
+                           columns[1]: [c for c, _, _, _, _, _ in data1], 
+                           columns[2]: [c for _, c, _, _, _, _ in data1], 
+                           columns[3]: [c for _, _, c, _, _, _ in data1], 
+                           columns[4]: [c for _, _, _, c, _, _ in data1], 
+                           columns[5]: [c for _, _, _, _, _, c in data1], 
+                           columns[6]: [c for c, _, _, _ in data2], 
+                           columns[7]: [c for _, c, _, _ in data2], 
+                           columns[8]: [c for c, _, c, _ in data2], 
+                           columns[9]: [c for _, _, _, c in data2], 
                            })
         return df 

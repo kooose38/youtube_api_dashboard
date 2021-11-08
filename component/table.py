@@ -4,10 +4,10 @@ import plotly.express as px
 import dash_html_components as html
 import dash_core_components as dcc 
 
-def generate_table(dataframe: pd.DataFrame, col_name: str, max_rows: int=10):
+def generate_table(dataframe: pd.DataFrame, col_name: str, max_rows: int=5):
     
     df = dataframe.sort_values(col_name, ascending=False)
-    usecols = ["timezone", "title", "commentCount", "viewCount", "likeCount", "dislikeCount"]
+    usecols = ["timezone", "title", col_name, "thumbnailURL"]
     
     return html.Table([
         html.Thead(
@@ -17,20 +17,49 @@ def generate_table(dataframe: pd.DataFrame, col_name: str, max_rows: int=10):
             html.Tr([
                 html.Td(df.iloc[i][col]) for col in usecols
             ]) for i in range(max_rows)
-        ], style={"margin-top": "5px"})
+        ])
     ])
     
     
-def table(dataframe: pd.DataFrame, col_name: str, children: str):
+def sort_thumbnail_url(dataframe: pd.DataFrame, col_name: str):
+    
+    return dataframe.sort_values(col_name, ascending=False)["thumbnailURL"].values[0]
+    
+def create_table(dataframe: pd.DataFrame):
     
     return html.Div([
+        html.H1(children="Ranking Top5", style={"background-color": "#003257", "color": "white"}), 
+        # viewcount
         html.Div([
-            html.H3(children=children, style={"font-weight": "bold"})
-        ], style={"text-align": "center"}), 
-        generate_table(dataframe, col_name)
-    ], style={
-        "padding": "20px", 
-        "margin": "0px 20px",
-        "box-shadow": "4px 4px 4px lightgrey",
-        "border-radius": "5px",
-    })
+            html.P(children="最も再生された動画一覧を取得します。"), 
+            html.Div([
+                generate_table(dataframe, "viewCount")
+            ]), 
+            html.Img(
+                src=sort_thumbnail_url(dataframe, "viewCount"),
+                width="850px", 
+            )
+        ]), 
+        # likecount
+        html.Div([
+            html.P(children="最も高評価された動画一覧を取得します。"), 
+            html.Div([
+                generate_table(dataframe, "likeCount")
+            ]), 
+            html.Img(
+                src=sort_thumbnail_url(dataframe, "likeCount"),
+                width="850px", 
+            )
+        ]), 
+        # dislikecount
+        html.Div([
+            html.P(children="最も低評価された動画一覧を取得します。"), 
+            html.Div([
+                generate_table(dataframe, "dislikeCount")
+            ]), 
+            html.Img(
+                src=sort_thumbnail_url(dataframe, "dislikeCount"),
+                width="850px", 
+            )
+        ]), 
+    ], style={"margin-top": "10px"})

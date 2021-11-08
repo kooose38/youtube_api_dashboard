@@ -11,23 +11,27 @@ from dotenv import load_dotenv
 import os 
 
 from api import Youtube
-from component.word import create_word_detail, create_word_graph
-from component.table import table
+from component.header import create_header
+from component.table import create_table
 from component.transition import create_transition
-from component.tag import create_tag 
+from component.word import create_word
+from component.holiday import create_holiday
+from component.month import create_month
 
 load_dotenv()
 app = dash.Dash(__name__)
 
 parser = argparse.ArgumentParser(description='youtube analysis platform')
 parser.add_argument("--channelId", help="youtube channel id", type=str)
+parser.add_argument("--debug", help="developer only command", type=int, default=0)
 args = parser.parse_args()
 
+# データの取得
 class YoutubeAPIConfig:
     YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
     YOUTUBE_API_VERSION = os.getenv("YOUTUBE_API_VERSION")
     YOUTUBE_API_SERVICE_NAME = os.getenv("YOUTUBE_API_SERVICE_NAME")
-    DEBUG = True
+    DEBUG = True if args.debug == 0 else False
 
 config = YoutubeAPIConfig()
 if config.DEBUG:
@@ -36,60 +40,24 @@ else:
     youtube = Youtube(config, args.channelId)
     df = youtube.main()
     df.to_csv(f"csv/{df['channelTitle'].values[0]}.csv", index=False)
-
-
-def header(title):
-    return html.Div([
-        html.H1(children="Channel Title: " + title, style={"font-weight": "bold"})
-    ], style={"margin": "10px 40px"})
-
+    
+# webページの作成関数
 def container(df, app):
     return html.Div([
-        html.Div([
-            html.Div([
-                create_tag("視聴回数", df.viewCount.mean().round(0), app), 
-                create_tag("ライク数", df.likeCount.mean().round(0), app), 
-                create_tag("ディスライク数", df.dislikeCount.mean().round(0), app), 
-                create_tag("コメント数", df.commentCount.mean().round(0), app), 
-            ], style={'display': 'flex', 'margin': '0px 0px 30px 0px'}), 
-             html.Div([
-                 create_transition(df, "viewCount"),
-                 create_transition(df, "likeCount"),
-                 create_transition(df, "dislikeCount"),
-             ], style={
-                 "display": "flex",
-                 "padding": "20px",
-                 "margin": "50px 20px",
-                 "box-shadow": "4px 4px 4px lightgrey", 
-                 "border-radius": "5px",
-             }), 
-            html.Div([
-                create_word_detail(), 
-                create_word_graph(df)
-            ], style={
-                "padding": "20px", 
-                "margin": "50px 20px", 
-                "box-shadow": "4px 4px 4px lightgrey", 
-                "border-radius": "5px",
-            })
-        ], style={"width": "50%", "justify-content": "space-between", "height": "900px"}), 
-
-        html.Div([
-           table(df, "viewCount", "最も再生された動画一覧"),
-           table(df, "likeCount", "最も高評価の動画一覧"),
-           table(df, "dislikeCount", "最も低評価の動画一覧"),
-        ], style={"width": "50%", "justify-content": "space-between", "height": "900px"})
-
-    ], style={
-        "display": "flex",
-        "width": "100%", 
-        "margin": "10px 40px",
-    })
+        create_table(df), 
+        create_transition(df, app),
+        create_word(df),
+        create_holiday(df),
+        create_month(df),
+    ])
 
 app.layout = html.Div([
-    header(df["channelTitle"].values[0]), 
-    container(df, app)
-])
+    html.Div([
+        html.H1(children="Youtube分析サイト", style={"font-size": "30px", "text-align": "center"}),
+        create_header(df), 
+        container(df, app)
+    ], style={"width": "850px", "margin": "0px auto", "background-color": "white"})
+], style={"background-color": "#003257", "margin": "0px"})
 
 if __name__ == "__main__":
     app.run_server()
