@@ -35,6 +35,8 @@ def make_img(df):
 
 def create_word(df):
     return html.Div([
-        html.P(children="テキスト分析結果"),
-        html.Img(src=make_img(df))
-    ])
+        html.H1(children="テキスト分析"),
+        html.Hr(),
+        html.P("タイトルに頻出される単語を大小順に描画します。"),
+        html.Img(src=make_img(df), width="100%")
+    ], style={"margin-top": "70px"})

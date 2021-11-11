@@ -3,16 +3,28 @@ import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, Output
 import plotly.express as px 
+import plotly.graph_objects as go
 import pandas as pd 
 import numpy as np 
 
 def create_month_component(df, col_name):
-    fig = px.violin(df, y=col_name, x="month")
-    
-    return html.Div([
-        html.P(children=col_name+"における月平均"),
-        dcc.Graph(figure=fig),
-    ])
+    if col_name == "viewCount":
+        fig = px.violin(df, y=col_name, x="month", template="plotly_dark")
+
+        return html.Div([
+            dcc.Graph(figure=fig),
+        ])
+    else:
+        fig = go.Figure()
+        fig.add_traces(go.Violin(x=df["month"], y=df["likeCount"], name="ライク数", line_color="blue",
+                                legendgroup="likeCount", scalegroup="likeCount", side="positive"))
+        fig.add_traces(go.Violin(x=df["month"], y=df["dislikeCount"], name="ディスライク数", line_color="orange",
+                                legendgroup="dislikeCount", scalegroup="dislikeCount", side="negative"))
+        fig.update_traces(meanline_visible=True)
+        fig.update_layout(template="plotly_dark", violingap=0, violinmode="overlay")
+        return html.Div([
+            dcc.Graph(figure=fig)
+        ])
 
 def create_month(dataframe: pd.DataFrame):
     df = dataframe.copy()
@@ -42,11 +54,17 @@ def create_month(dataframe: pd.DataFrame):
         
     
     return html.Div([
+        html.H1("月分析"),
+        html.Hr(),
+        html.P("月ベースに各数値を合計します。"),
         create_month_component(df, "viewCount"),
-        create_month_component(df, "likeCount"),
-        create_month_component(df, "dislikeCount"),
-        html.H1(children="診断結果", style={"background-color": "#003257", "color": "white"}),
-        html.P(children="再生回数の多いのは、" + str(most_popular_month) + "月です"),
-        html.P(children=txt),
-        html.P(children=txt1)
-    ])
+        create_month_component(df, "all"),
+        
+        html.Div([
+            html.H1(children="診断結果"),
+            html.Hr(),
+            html.P(children="再生回数の多いのは、" + str(most_popular_month) + "月です"),
+            html.P(children=txt),
+            html.P(children=txt1)
+        ], style={"margin-top": "70px"})
+    ], style={"margin-top": "70px"})

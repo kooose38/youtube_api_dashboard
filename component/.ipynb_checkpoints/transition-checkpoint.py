@@ -6,40 +6,41 @@ import dash
 import dash_core_components as dcc 
 import dash_html_components as html
 
-def update_graph(df, col_name: str):
-    x = df[["date", col_name]]
-    x["date"] = pd.to_datetime(x["date"])
-    x = x.groupby("date").sum()
-    x["date"] = x.index 
-    x.reset_index(drop=True, inplace=True)
-    fig = px.line(x, x="date", y=col_name)
-    fig.update_layout(transition_duration=500)
+def update_graph(df):
+    dfs = []
+    for col in ["viewCount", "likeCount", "dislikeCount"]:
+        x = df[["date", col]]
+        x["date"] = pd.to_datetime(x["date"])
+        x = x.groupby("date").sum()
+        x["date"] = x.index 
+        x.reset_index(drop=True, inplace=True)
+        dfs.append(x)
+    fig = go.Figure(data=[
+        go.Scatter(x=dfs[0]["date"], y=dfs[0]["viewCount"], name="再生回数", mode="lines"),
+        go.Scatter(x=dfs[1]["date"], y=dfs[1]["likeCount"], name="ライク数", mode="lines"),
+        go.Scatter(x=dfs[2]["date"], y=dfs[2]["dislikeCount"], name="ディスライク数", mode="lines"),
+    ])
+    fig.update_layout(template="plotly_dark")
     return fig 
 
 
-def support_transition(df, col_name: str):
-    
+def support_transition(df):
     dfs = df[["date"]]
     dfs["year"] = df.date.apply(lambda x: int(x.split("-")[0]))
-
-    fig = update_graph(df, col_name)
+    fig = update_graph(df)
     return html.Div([
-        html.P(children=col_name + " における推移"),
-        html.Div([
-            dcc.Graph(figure=fig, id="graph-transition-"+col_name), 
-            dcc.Slider(id="year-slider-"+col_name, 
+            dcc.Graph(figure=fig, id="graph-transition"), 
+            dcc.Slider(id="slider-transition", 
                       min=dfs["year"].min(), max=dfs["year"].max(), value=dfs["year"].max(), 
                       marks={str(year): str(year) for year in dfs["year"].unique()},
                       step=None),
-        ])
     ])
 
 def create_transition(df: pd.DataFrame, app: object):
-    
     return html.Div([
-        html.H1(children="グラフ", style={"background-color": "#003257", "color": "white"}),
-        support_transition(df, "viewCount"),
-        support_transition(df, "likeCount"), 
-        support_transition(df, "dislikeCount"), 
-    ])
+        html.H1(children="推移分析"),
+        html.Hr(),
+        html.P("時系列データを描画します。\n時期によって変動があるかどうか確認することができます。"),
+        support_transition(df),
+    ], style={"margin-top": "70px"})
     

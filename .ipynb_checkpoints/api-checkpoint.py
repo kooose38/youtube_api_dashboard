@@ -7,12 +7,26 @@ from apiclient.discovery import build
 from apiclient.errors import HttpError
 
 class Youtube(object):
+    def __doc__(self):
+        """
+        channel_idに基づいてyoutube_apiから過去全てのデータを取得する
+        
+        Args:
+            config: Dict 設定
+            channelId: str 
+            
+        Return:
+            df: pd.DataFrame
+        """
+        
+        pass
+    
     def __init__(self, config, channelId):
         self.config = config 
         self.channelId = channelId
-        self.youtube = build(config.YOUTUBE_API_SERVICE_NAME, 
-                             config.YOUTUBE_API_VERSION, 
-                             developerKey=config.YOUTUBE_API_KEY)
+        self.youtube = build(config["YOUTUBE_API_SERVICE_NAME"], 
+                             config["YOUTUBE_API_VERSION"], 
+                             developerKey=config["YOUTUBE_API_KEY"])
         
     def main(self):
         data1 = self.get_video_ids()

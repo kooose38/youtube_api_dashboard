@@ -7,24 +7,13 @@
   
 1.[youtube API](https://developers.google.cn/youtube/v3/getting-started?hl=ja)に従ってAPI_KEYを取得してください。  
 
-2.取得後に`.env`を作成して以下の記述をします。  
-環境変数を使うのでキーを外部に漏らさないようにしてください。    
-  
-  
-```
-  # .env
-  
-  YOUTUBE_API_KEY = "" # 取得したキー
-  YOUTUBE_API_VERSION = "v3"
-  YOUTUBE_API_SERVICE_NAME = "youtube"
-  
-```  
 
-3.youtubeチャンネルから`channel ID`を取得します。  
+2.youtubeチャンネルから`channel ID`を取得します。  
+コマンドを実行します。パッケージをインストールしてください。  
 一定時間後に`localhost`が立ち上がるのでアクセスします。
 
 ```
-  python3 app.py --channelId <チャンネルID> --debug 1
+  $ python3 app.py 
   Dash is running on http://127.0.0.1:8050/
 
  * Serving Flask app 'app' (lazy loading)

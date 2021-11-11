@@ -19,20 +19,20 @@ def create_header(df):
     commentAvg = df["commentCount"].mean().round(0).astype(str)
     
     return html.Div([
-        html.H1(children="統計値", style={"color": "white", "background-color": "#003257"}), 
-        html.P(children="ChannelId: " + channelId), 
-        html.P(children="ChennelTitle: " + channelTitle), 
+        html.H1(children="統計値"), 
+        html.Hr(),
+        html.P(children="チャンネル名: " + channelTitle), 
         html.P(children="URL: "),
         html.A(children=url, href=url), 
-        html.P(children="Cumulative number of Videos : " + videoCumsum), 
-        html.P(children="Total number of Views: " + viewCumsum), 
-        html.P(children="Total number of Like counts: " + likeCumsum), 
-        html.P(children="Total number of Dislike counts: " + dislikeCumsum), 
-        html.P(children="Total number of Comment counts: " + commentCumsum), 
-        html.P(children="Average number of Views: " + viewAvg), 
-        html.P(children="Average number of Like counts: " + likeAvg), 
-        html.P(children="Average number of Dislike counts: " + dislikeAvg), 
-        html.P(children="Average number of Comment counts: " + commentAvg), 
+        html.P(children="総動画本数 : " + videoCumsum), 
+        html.P(children="総視聴回数: " + viewCumsum), 
+        html.P(children="総ライク数: " + likeCumsum), 
+        html.P(children="総ディスライク数: " + dislikeCumsum), 
+        html.P(children="総コメント数: " + commentCumsum), 
+        html.P(children="平均視聴回数: " + viewAvg), 
+        html.P(children="平均ライク数: " + likeAvg), 
+        html.P(children="平均ディスライク数: " + dislikeAvg), 
+        html.P(children="平均コメント数: " + commentAvg), 
     ])
     
     
