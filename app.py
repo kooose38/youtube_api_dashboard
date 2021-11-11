@@ -27,7 +27,7 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 config = {
     "YOUTUBE_API_VERSION": "v3",
     "YOUTUBE_API_SERVICE_NAME": "youtube",
-    "DEBUG": False,
+    "DEBUG": True,
     "data": pd.read_csv("./csv/youtube_api.csv"), 
 }
 

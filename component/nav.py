@@ -6,4 +6,5 @@ def create_navbar():
                 brand_href="/",
                 color="primary",
                 dark=True,
+                sticky="top"
             )
