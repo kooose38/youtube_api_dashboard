@@ -23,6 +23,7 @@ from component.holiday import create_holiday
 from component.month import create_month
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], suppress_callback_exceptions = True)
+server = app.server
 
 
 # データの取得
