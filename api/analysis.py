@@ -6,7 +6,7 @@ import plotly.express as px
 from apiclient.discovery import build
 from apiclient.errors import HttpError
 
-class Youtube(object):
+class AnalysisYoutube(object):
     def __doc__(self):
         """
         channel_idに基づいてyoutube_apiから過去全てのデータを取得する
